@@ -1,7 +1,7 @@
 
 
-               Executable file Selector  Exsel  Ver.1.11
-                      Copyright (C) 1998  K.Takata
+               Executable file Selector  Exsel  Ver.1.12
+                   Copyright (C) 1998-2000  K.Takata
 
 
 １．概要
@@ -12,6 +12,7 @@
     るときは DOS 用の、Windows が起動しているときは Windows 用のプログラ
     ムをというように、自動的に切り替えて起動するようにします。
 
+
 ２．このプログラムの特徴
     ・MS-DOS 起動時にはこのプログラム自体のメモリの使用量は０となり、起
       動される側のプログラムはメモリを最大限利用することができます。
@@ -21,22 +22,25 @@
       成するため、クラスタサイズの大きいディスクではディスク容量が浪費さ
       れる可能性があります。
 
+
 ３．動作環境
     　MS-DOS, Windows95 DOS窓など
 
+
 ４．使用方法
-    　> exsel [<option>] <execname> <dosprog> [<winprog>]
+    　> exsel [<option>] <execname> [<dosprog> [<winprog>]]
         <option>    -nw    : Windows 起動時はプログラムを起動しない
                     -k     : <execname>, <dosprog>, <winprog> をキー入力
                            する
+                    -cvt   : <execname> を新バージョンに変換する。
                     -h, -? : このヘルプを表示する
         <execname>  生成するセレクタプログラム名
         <dosprog>   MS-DOS 起動時に起動するプログラム名
         <winprog>   Windows 起動時に起動するプログラム名
 
     【注】
-      ・<dosprog>,<winprog> は必ずフルパスで指定してください。（拡張子も
-        必須です。）
+      ・<dosprog>, <winprog> は必ずフルパスで指定してください。（拡張子
+        も必須です。）
       ・<execname> の拡張子は省略可能です。（.com が省略されたと見なしま
         す。）
 
@@ -56,6 +60,7 @@
       きは DOS 用の tar が、Windows が起動しているときは Windows 用の
       tar が起動するようになります。
 
+
 ５．コンパイル方法
     　このプログラムのコンパイルには LSI C-86 3.30c 試食版と、Arrowsoft
     Assembler v1.00d を利用しました。（アセンブラは MASM 3.0 以上で代用
@@ -66,14 +71,23 @@
     れば exsel.exe ができあがるはずです。
 
 
-６．注意事項、その他
+６．更新履歴
+    1998/12/28  Ver.1.11
+        ・最初の公開バージョン。
+
+    2000/01/21  Ver.1.12
+        ・スタック領域を 256bytes に拡大。前バージョンよりも安定して動作
+          するはず。
+
+
+７．注意事項、その他
     ・このプログラムはフリーソフトウェアです。
     ・このプログラムの著作権は作者である私 K.Takata（高田謙）に帰属しま
       す。
     ・もしこのプログラムを使用することで何らかの問題が発生しても作者はい
       っさいの責任を負いません。各自の責任で使用してください。
     ・アーカイブを変更しない限り配布／転載は自由です。
-    ・ソースファイルの使用は自由です。
+    ・ソースファイルの使用は非商用に限り自由です。
 
         作者   : K.Takata（高田謙）
         E-mail : kentkt@anet.ne.jp, HZL03275@nifty.ne.jp

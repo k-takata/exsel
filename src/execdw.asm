@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;	Execdw.com	Ver.1.11					;
-;	Copyright (C) 1998  K.Takata					;
+;	Execdw.com	Ver.1.12					;
+;	Copyright (C) 1998-2000  K.Takata				;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 	.186
@@ -11,7 +11,7 @@
 LF	equ	0ah
 CR	equ	0dh
 
-STKSIZ	equ	80h
+STKSIZ	equ	100h
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; マクロ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -92,7 +92,7 @@ GetRetCode	macro
 	int	21h
 endm
 
-;ＰＳＰアドレスの設定(dosfunc 50h)
+;PSP アドレスの設定(dosfunc 50h)
 ;Call	seg:新しいPSPのセグメント
 ;Ret	cf=1:エラー(ax:エラーコード)
 SetPSP	macro	seg
@@ -103,7 +103,7 @@ SetPSP	macro	seg
 	int	21h
 endm
 
-;ＰＳＰアドレスの取得(dosfunc 51h)
+;PSP アドレスの取得(dosfunc 51h)
 ;Ret	bx:PSPアドレス（注）
 GetPSP	macro
 	mov	ah,51h
@@ -130,7 +130,7 @@ endm
 
 ;MS-DOS Ver 7.00 以上かどうか(int 2fh, ax=4a33h)
 ;Ret	ax=0:MS-DOS Ver 7.00 以上, ax<>0:それ以外
-;	si,dx:破壊？
+;	bx,dx,si,ds:破壊
 IsUpperThanDosVer7	macro
 	push	ds
 	mov	ax,4a33h
@@ -187,8 +187,8 @@ MCB_t	ends
 PRM_t	struc
 PRMenvseg	dw	?		; 環境変数領域のセグメントアドレス
 PRMcmdline	dw	?,?		; コマンドラインへのポインタ
-PRMFCB1		dw	?,?		; デフォルト FBC#1 へのポインタ
-PRMFCB2		dw	?,?		; デフォルト FBC#2 へのポインタ
+PRMFCB1		dw	?,?		; デフォルト FCB#1 へのポインタ
+PRMFCB2		dw	?,?		; デフォルト FCB#2 へのポインタ
 PRM_SP		dw	?		; SP の初期値 - 2 (dosfunc 4b01h)
 PRM_SS		dw	?		; SS の初期値     (dosfunc 4b01h)
 PRM_IP		dw	?		; IP の初期値     (dosfunc 4b01h)
@@ -211,7 +211,7 @@ start:
 	jmp	main
 
 
-Version	db	"Execdw.com Ver.1.11 Copyright (C) 1998  K.Takata",CR,LF
+Version	db	"Execdw.com Ver.1.12  Copyright (C) 1998-2000  K.Takata",CR,LF
 
 
 	org	140h
@@ -472,6 +472,7 @@ execdos	endp
 
 
 endofprog:				; プログラムの最後
+
 
 cseg	ends
 	end

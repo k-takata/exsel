@@ -1,12 +1,14 @@
 /****************************************************************************/
-/*		Executable file Selector	exsel.exe		Ver.1.11				*/
-/*		Copyright (C) 1998  K.Takata										*/
+/*		Executable file Selector	exsel.exe		Ver.1.12				*/
+/*		Copyright (C) 1998-2000  K.Takata									*/
 /****************************************************************************/
 
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <jstring.h>
+#include <dos.h>
 #include "exsel.h"								/* char execdw[]; */
 
 
@@ -15,11 +17,15 @@
 #define	WinID			"WIN="
 
 
-void getargs(int argc, char *argv[],
-				char *execname, char *dosprog, char *winprog);
+int getargs(int argc, char *argv[],
+		char *execname, char *dosprog, char *winprog);
 void inputprogname(char *execname, char *dosprog, char *winprog);
 char *addext(char *filename, const char *ext);
-int exsel(char *execprog, char *dosprog, char *winprog);
+char *chgext(char *filename, const char *ext);
+int cvt(const char *execprog, char *dosprog, char *winprog);
+int copy(const char *srcname, const char *dstname);
+int exsel(const char *execprog, const char *dosprog, const char *winprog);
+int readprogname(const char *execprog, char *dosprog, char *winprog);
 char *searchstr(const char *mem, size_t n, const char *str);
 void usage(void);
 
@@ -27,31 +33,36 @@ void usage(void);
 /* メイン */
 int main(int argc, char *argv[])
 {
-	static char	execname[ProgNameSize],
+	int ret;
+	static char execname[ProgNameSize],
 				dosprog[ProgNameSize],
 				winprog[ProgNameSize];
 	
-	getargs(argc, argv, execname, dosprog, winprog);
-	exit(exsel(execname, dosprog, winprog));
+	ret = getargs(argc, argv, execname, dosprog, winprog);
+	if (ret) {
+		return ret;
+	}
+	return exsel(execname, dosprog, winprog);
 }
 
 /* コマンドラインの解析 */
-void getargs(int argc, char *argv[],
-				char *execname, char *dosprog, char *winprog)
+int getargs(int argc, char *argv[],
+		char *execname, char *dosprog, char *winprog)
 {
-	int		f_exec = 0,
-			f_dos = 0,
-			f_win = 0;
+	int f_exec = 0,
+		f_dos = 0,
+		f_win = 0,
+		f_cvt = 0;
 	
 	*execname = *dosprog = *winprog = '\x00';
 	while (--argc) {
-		char	*p;
+		char *p;
 		
 		p = *++argv;
 		if (*p == '-' || *p == '/') {			/* スイッチ指定 チェック */
 			switch(tolower(*++p)) {
 			case 'n':
-				if (tolower(*++p) == 'w') {		/* -nw */
+				if (strcmp(p, "nw") == 0) {		/* -nw */
 					f_win = 1;
 					*winprog = '\xff';
 				}
@@ -60,6 +71,12 @@ void getargs(int argc, char *argv[],
 			case 'k':							/* -k */
 				inputprogname(execname, dosprog, winprog);
 				f_exec = f_dos = f_win = 1;
+				break;
+			
+			case 'c':
+				if (strcmp(p, "cvt") == 0) {	/* -cvt */
+					f_cvt = 1;
+				}
 				break;
 			
 			case '?':							/* -h, -? */
@@ -73,6 +90,9 @@ void getargs(int argc, char *argv[],
 				f_exec = 1;
 				strcpy(execname, p);
 				addext(execname, "com");
+				if (f_cvt) {
+					return cvt(execname, dosprog, winprog);
+				}
 			} else if (!f_dos) {
 				f_dos = 1;
 				strcpy(dosprog, p);
@@ -84,6 +104,7 @@ void getargs(int argc, char *argv[],
 	}
 	if (!f_dos)
 		usage();
+	return 0;
 }
 
 /* プログラム名を入力する */
@@ -107,22 +128,87 @@ void inputprogname(char *execname, char *dosprog, char *winprog)
 /* ファイル名に拡張子を付加する */
 char *addext(char *filename, const char *ext)
 {
-	char	*p;
+	char *p;
 	
-	p = strrchr(filename, '\\');
+	p = jstrrchr(filename, '\\');
 	if (p == NULL)
 		p = filename;
-	if (strchr(p, '.') == NULL)
-		strcat(strcat(filename, "."), ext);
+	if (strchr(p, '.') == NULL) {
+		strcat(filename, ".");
+		strcat(filename, ext);
+	}
+	return filename;
+}
+
+/* 拡張子を付け替える */
+char *chgext(char *filename, const char *ext)
+{
+	char *p;
+	
+	p = jstrrchr(filename, '\\');
+	if (p == NULL)
+		p = filename;
+	p = strchr(p, '.');
+	if (p != NULL) {
+		*p = '\0';
+	}
+	strcat(filename, ".");
+	strcat(filename, ext);
 	
 	return filename;
 }
 
-/* セレクタプログラムの生成 */
-int exsel(char *execprog, char *dosprog, char *winprog)
+/* 新バージョンへの変換（前処理） */
+int cvt(const char *execprog, char *dosprog, char *winprog)
 {
-	FILE	*fp;
-	char	*p1, *p2;
+	int ret;
+	char buf[ProgNameSize];
+	ret = readprogname(execprog, dosprog, winprog);
+	if (ret) {
+		return ret;
+	}
+	strcpy(buf, execprog);
+	chgext(buf, "old");
+	copy(execprog, buf);
+	return 0;
+}
+
+/* ファイルをコピー */
+int copy(const char *srcname, const char *dstname)
+{
+	FILE *fpi, *fpo;
+	char buf[1024];
+	int len;
+	unsigned date, time, attr;
+	
+	remove(dstname);
+	fpi = fopen(srcname, "rb");
+	fpo = fopen(dstname, "wb");
+	if (fpi == NULL || fpo ==NULL) {
+		fputs("\nexsel : can't open file\n", stderr);
+		if (fpi)
+			fclose(fpi);
+		if (fpo)
+			fclose(fpo);
+		return 1;
+	}
+	while ((len = fread(buf, 1, sizeof(buf), fpi)) != 0) {
+		fwrite(buf, 1, len, fpo);
+	}
+	_dos_getftime(fileno(fpi), &date, &time);
+	_dos_setftime(fileno(fpo), date, time);
+	fclose(fpo);
+	fclose(fpi);
+	_dos_getfileattr(srcname, &attr);
+	_dos_setfileattr(dstname, attr);
+	return 0;
+}
+
+/* セレクタプログラムの生成 */
+int exsel(const char *execprog, const char *dosprog, const char *winprog)
+{
+	FILE *fp;
+	char *p1, *p2;
 	
 	p1 = searchstr(execdw, sizeof(execdw), DosID);
 	p2 = searchstr(execdw, sizeof(execdw), WinID);
@@ -147,11 +233,42 @@ int exsel(char *execprog, char *dosprog, char *winprog)
 	return 0;
 }
 
+/* プログラム名を指定ファイルから読み込む */
+int readprogname(const char *execprog, char *dosprog, char *winprog)
+{
+	FILE *fp;
+	char *p1, *p2;
+	char buf[1024];
+	
+	fp = fopen(execprog, "rb");
+	if (fp == NULL) {
+		fputs("\nexsel : can't open file\n", stderr);
+		return 1;
+	}
+	fread(buf, sizeof(buf), 1, fp);
+	fclose(fp);
+	
+	p1 = searchstr(buf, sizeof(buf), DosID);
+	p2 = searchstr(buf, sizeof(buf), WinID);
+	if ((p1 == NULL) || (p2 == NULL)) {
+		fputs("\nexsel : data is broken\n", stderr);
+		return 1;
+	}
+	
+	/* MS-DOS 起動時に起動するプログラム名をセット */
+	strcpy(dosprog, p1 + strlen(DosID));
+	
+	/* Windows 起動時に起動するプログラム名をセット */
+	strcpy(winprog, p2 + strlen(WinID));
+	
+	return 0;
+}
+
 /* メモリ内から文字列を検索 */
 char *searchstr(const char *mem, size_t n, const char *str)
 {
-	const char	*p;
-	int		len;
+	const char *p;
+	int len;
 	
 	len = strlen(str);
 	for (p = mem; p < mem + n; p++) {
@@ -166,19 +283,20 @@ char *searchstr(const char *mem, size_t n, const char *str)
 /* 使用法表示 */
 void usage(void)
 {
-	char	*msg[] = {
-		"Executable file Selector  exsel.exe  Ver.1.11",
-		"Copyright (C) 1998  K.Takata\n",
-		"usage : exsel [<option>] <execname> <dosprog> [<winprog>]\n",
+	char *msg[] = {
+		"Executable file Selector  exsel.exe  Ver.1.12",
+		"Copyright (C) 1998-2000  K.Takata\n",
+		"usage : exsel [<option>] <execname> [<dosprog> [<winprog>]]\n",
 		" <option>    -nw    : Windows 起動時はプログラムを起動しない",
 		"             -k     : <execname>, <dosprog>, <winprog> をキー入力する",
+		"             -cvt   : <execname> を新バージョンに変換する。",
 		"             -h, -? : このヘルプを表示する\n",
 		" <execname>  生成するセレクタプログラム名",
 		" <dosprog>   MS-DOS 起動時に起動するプログラム名",
 		" <winprog>   Windows 起動時に起動するプログラム名",
 		""
 	};
-	char	**pmsg = msg;
+	char **pmsg = msg;
 	
 	while (**pmsg)
 		puts(*pmsg++);
