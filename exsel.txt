@@ -1,0 +1,80 @@
+
+
+               Executable file Selector  Exsel  Ver.1.11
+                      Copyright (C) 1998  K.Takata
+
+
+１．概要
+    　MS-DOS と Windows で起動するプログラムを切り替えるためのプログラム
+    です。
+    　たとえば tar や nkf といったソフトは DOS 用のプログラムと Windows
+    用のプログラムがありますが、そのようなプログラムを、DOS が起動してい
+    るときは DOS 用の、Windows が起動しているときは Windows 用のプログラ
+    ムをというように、自動的に切り替えて起動するようにします。
+
+２．このプログラムの特徴
+    ・MS-DOS 起動時にはこのプログラム自体のメモリの使用量は０となり、起
+      動される側のプログラムはメモリを最大限利用することができます。
+      （Windows 起動時は Win32 コンソールプログラムなどを起動することを
+      意図しているため、メモリの使用量について最適化はしていません。）
+    ・切り替えて起動するプログラム１組ごとに１つのセレクタプログラムを生
+      成するため、クラスタサイズの大きいディスクではディスク容量が浪費さ
+      れる可能性があります。
+
+３．動作環境
+    　MS-DOS, Windows95 DOS窓など
+
+４．使用方法
+    　> exsel [<option>] <execname> <dosprog> [<winprog>]
+        <option>    -nw    : Windows 起動時はプログラムを起動しない
+                    -k     : <execname>, <dosprog>, <winprog> をキー入力
+                           する
+                    -h, -? : このヘルプを表示する
+        <execname>  生成するセレクタプログラム名
+        <dosprog>   MS-DOS 起動時に起動するプログラム名
+        <winprog>   Windows 起動時に起動するプログラム名
+
+    【注】
+      ・<dosprog>,<winprog> は必ずフルパスで指定してください。（拡張子も
+        必須です。）
+      ・<execname> の拡張子は省略可能です。（.com が省略されたと見なしま
+        す。）
+
+    【例】
+      　ここでは例として DOS と Windows で tar を切り替えて使う場合の説
+      明をします。
+      　a:\util\tar.exe が DOS 用の tar、a:\winutil\tar32.exe が Windows
+      用の tar とします。
+      　コマンドラインから次のように入力するとカレントディレクトリに
+      tar.com が生成されます。
+
+        > exsel tar a:\util\tar.exe a:\winutil\tar32.exe
+
+      　生成された tar.com をパスが通っている適当なディレクトリにコピー
+      してください。
+      　これでコマンドラインから tar と入力すると、DOS が起動していると
+      きは DOS 用の tar が、Windows が起動しているときは Windows 用の
+      tar が起動するようになります。
+
+５．コンパイル方法
+    　このプログラムのコンパイルには LSI C-86 3.30c 試食版と、Arrowsoft
+    Assembler v1.00d を利用しました。（アセンブラは MASM 3.0 以上で代用
+    可能だと思います。）
+    　アセンブラに Arrow ASM を使う場合は、asm.exe を masm.exe にリネー
+    ムしておいてください。
+    　src.lzh を解凍したディレクトリで、コマンドラインから make と入力す
+    れば exsel.exe ができあがるはずです。
+
+
+６．注意事項、その他
+    ・このプログラムはフリーソフトウェアです。
+    ・このプログラムの著作権は作者である私 K.Takata（高田謙）に帰属しま
+      す。
+    ・もしこのプログラムを使用することで何らかの問題が発生しても作者はい
+      っさいの責任を負いません。各自の責任で使用してください。
+    ・アーカイブを変更しない限り配布／転載は自由です。
+    ・ソースファイルの使用は自由です。
+
+        作者   : K.Takata（高田謙）
+        E-mail : kentkt@anet.ne.jp, HZL03275@nifty.ne.jp
+        URL    : http://webs.to/ken/
