@@ -1,6 +1,6 @@
 /****************************************************************************/
-/*		Mkarray.exe		Ver.1.11											*/
-/*		Copyright (C) 1998  K.Takata										*/
+/*		Mkarray.exe		Ver.1.20											*/
+/*		Copyright (C) 1998-2000  K.Takata									*/
 /****************************************************************************/
 
 #include <stdio.h>
@@ -21,14 +21,20 @@ int mkarray(char *filename, char *arrayname)
 {
 	FILE	*fp;
 	int		chr, i;
-
+	char	hex;
+	
 	i = 0;
 	fp = fopen(filename, "rb");
 	if (fp == NULL) {
 		fputs("mkarray : can't open file\n", stderr);
 		return 1;
 	}
-	printf("char %s[] = {", arrayname);
+	
+	/* "char arrayname[] = {" */
+	fputs("char ", stdout);
+	fputs(arrayname, stdout);
+	fputs("[] = {", stdout);
+	
 	while (1) {
 		chr = fgetc(fp);
 		if (chr == EOF) {
@@ -41,11 +47,21 @@ int mkarray(char *filename, char *arrayname)
 			}
 		}
 		if ((i++ % 10) == 0)
-			printf("\n\t");
-		printf("0x%02x, ", chr);
+			fputs("\n\t", stdout);
+		
+		/* "0x%02x, " */
+		fputs("0x", stdout);
+		hex = (chr / 16) % 16;
+		hex += (hex < 10) ? '0' : 'a' - 10;
+		putchar(hex);
+		hex = chr % 16;
+		hex += (hex < 10) ? '0' : 'a' - 10;
+		putchar(hex);
+		fputs(", ", stdout);
 	}
-	printf("\n};\n");
+	fputs("\n};\n", stdout);
 	fclose(fp);
+	
 	return 0;
 }
 
