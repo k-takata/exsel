@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;	Execdw.exe	Ver.1.20					;
-;	Copyright (C) 1998-2000  K.Takata				;
+;	Execdw.exe	Ver.2.00					;
+;	Copyright (C) 1998-2005  K.Takata				;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 	.186
@@ -211,16 +211,16 @@ start:
 	jmp	execdos
 
 
-Version	db	"Execdw.exe Ver.1.20  Copyright (C) 1998-2000  K.Takata",CR,LF
+Version	db	"Execdw.exe Ver.2.00  Copyright (C) 1998-2005  K.Takata",CR,LF
 
 
 ;	org	140h
 	org	40h
 
 DosID	db	"DOS="
-dosprog	db	256 dup (0)		; DOS 環境時に起動するプログラム
+dosprog	db	260 dup (0)		; DOS 環境時に起動するプログラム
 WinID	db	"WIN="
-winprog	db	256 dup (0)		; Win 環境時に起動するプログラム
+winprog	db	260 dup (0)		; Win 環境時に起動するプログラム
 
 
 ; パラメータブロック
@@ -249,8 +249,8 @@ execdos	proc	near
 	ReallocMem	es, bx		; 不要なメモリを解放
 
 	GetStrategy			; ストラテジの取得
-	jnc	lbl100
-		Exit	0ffh
+	jc	errorexit
+
 lbl100:
 	push	ax			; 現在のストラテジを保存
 	mov	bx, 2			; 上位メモリブロックから割り当て
@@ -292,15 +292,19 @@ lbl101:
 
 	mov	di, ax			; 新環境変数領域のセグメント
 
-	jmp	short resetstrategy
+;	jmp	short resetstrategy
 
 allocmemerr:
-;	mov	cl,1
+;	mov	cl, 1
 resetstrategy:
 	pop	bx			; <= push ax
 	SetStrategy	bx		; ストラテジを元に戻す
 	jcxz	lbl102			; メモリ不足でなければ CX = 0 である
-		Exit	0ffh		; メモリ不足
+
+errorexit:
+	Exit	0ffh			; エラー終了
+
+
 lbl102:
 	FreeMEM	dx			; 現環境変数領域の解放
 
@@ -328,22 +332,18 @@ lbl102:
 	add	bx, 10h			; para size of PSP
 	mov	ss, bx			; 新 ss (new stack segment)
 	push	bx			; 新 cs (new program segment)
-	mov	bx, offset newadr	; 新 ip
-	push	bx
+	push	offset newadr		; 新 ip
 db	0cbh		;retf		; 新領域にジャンプ
 
 newadr:
 	FreeMem	es			; 旧メモリブロックの解放
-	jnc	lbl103
-		Exit	0ffh
+	jc	errorexit
+
 lbl103:
 	; プログラムのロード
-;	push	ds			; PSP
 	mov	cx, ds			; PSP
 	push	cs
-	push	cs
 	pop	ds
-	pop	es
 	mov	bx, offset params
 ;	mov	[bx].PRMenvseg, 0		; 初期化済み
 ;	mov	[bx].PRMcmdline, offset PSPargc	; 初期化済み
@@ -353,9 +353,10 @@ lbl103:
 ;	mov	[bx].PRMFCB2, offset PSPFCB2	; 初期化済み
 	mov	[bx].(PRMFCB2+2), cx		; PSP
 	mov	dx, offset dosprog
+	push	ds
+	pop	es
 	mov	ax, 4b01h
 	int	21h			; プログラムのロードと非実行
-;	pop	ds			; <= push ds
 	mov	ds, cx
 	jnc	lbl104
 		Exit	al

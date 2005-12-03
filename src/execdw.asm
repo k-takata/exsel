@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;	Execdw.com	Ver.1.12					;
-;	Copyright (C) 1998-2000  K.Takata				;
+;	Execdw.com	Ver.1.13					;
+;	Copyright (C) 1998-2005  K.Takata				;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 	.186
@@ -22,7 +22,7 @@ STKSIZ	equ	100h
 ;	dl:revision
 ;	dh:version flags
 GetTrueDosVer	macro
-	mov	ax,3306h
+	mov	ax, 3306h
 	int	21h
 endm
 
@@ -31,10 +31,10 @@ endm
 ;Ret	ax:割り当てられたメモリのセグメントアドレス
 ;	cf=1:エラー(ax:エラーコード)
 AllocMem macro	size
- ifdif <size>,<bx>
-	mov	bx,size
+ ifdif <size>, <bx>
+	mov	bx, size
  endif
-	mov	ah,48h
+	mov	ah, 48h
 	int	21h
 endm
 
@@ -42,28 +42,28 @@ endm
 ;Call	seg:開放するセグメントアドレス
 ;Ret	cf=1:エラー(ax:エラーコード)
 FreeMem macro	seg
- ifdif <seg>,<es>
+ ifdif <seg>, <es>
 	push	seg
 	pop	es
  endif
-	mov	ah,49h
+	mov	ah, 49h
 	int	21h
 endm
 
 ;メモリブロックサイズの変更(dosfunc 4ah)
-;Call	seg:変更するセグメントアドレス,size:新しいサイズ(para.)
-;Ret	cf=1:エラー(ax:エラーコード,bx:使用可能な最大のサイズ)
-ReallocMem	macro	seg,size
- ifdif <seg>,<es>
+;Call	seg:変更するセグメントアドレス, size:新しいサイズ(para.)
+;Ret	cf=1:エラー(ax:エラーコード, bx:使用可能な最大のサイズ)
+ReallocMem	macro	seg, size
+ ifdif <seg>, <es>
 	push	seg
  endif
- ifdif <size>,<bx>
-	mov	bx,size
+ ifdif <size>, <bx>
+	mov	bx, size
  endif
- ifdif <seg>,<es>
+ ifdif <seg>, <es>
 	pop	es
  endif
-	mov	ah,4ah
+	mov	ah, 4ah
 	int	21h
 endm
 
@@ -71,24 +71,24 @@ endm
 ;Call	code:終了コード
 Exit	macro	code
  ifnb <code>
-  if .type code+ax		; code が即値のとき（怪しい判定法）
-	mov	ax,4c00h+code
+  if .type code and 4		; code が即値のとき（怪しい判定法）
+	mov	ax, 4c00h+code
   else
-   ifdif <code>,<al>
-	mov	al,code
+   ifdif <code>, <al>
+	mov	al, code
    endif
-	mov	ah,4ch
+	mov	ah, 4ch
   endif
  else
-	mov	ax,4c00h
+	mov	ax, 4c00h
  endif
 	int	21h
 endm
 
 ;子プロセスのリターンコードの取得(dosfunc 4dh)
-;Ret	al:リターンコード , ah:終了状態
+;Ret	al:リターンコード, ah:終了状態
 GetRetCode	macro
-	mov	ah,4dh
+	mov	ah, 4dh
 	int	21h
 endm
 
@@ -96,24 +96,24 @@ endm
 ;Call	seg:新しいPSPのセグメント
 ;Ret	cf=1:エラー(ax:エラーコード)
 SetPSP	macro	seg
- ifdif <seg>,<bx>
-	mov	bx,seg
+ ifdif <seg>, <bx>
+	mov	bx, seg
  endif
-	mov	ah,50h
+	mov	ah, 50h
 	int	21h
 endm
 
 ;PSP アドレスの取得(dosfunc 51h)
 ;Ret	bx:PSPアドレス（注）
 GetPSP	macro
-	mov	ah,51h
+	mov	ah, 51h
 	int	21h
 endm
 
 ;ストラテジの取得(dosfunc 5800h)
-;Ret	ax:ストラテジ , cf=1:エラー(ax:エラーコード)
+;Ret	ax:ストラテジ, cf=1:エラー(ax:エラーコード)
 GetStrategy	macro
-	mov	ax,5800h
+	mov	ax, 5800h
 	int	21h
 endm
 
@@ -121,19 +121,19 @@ endm
 ;Call	strategy:ストラテジ
 ;Ret	cf=1:エラー(ax:エラーコード)
 SetStrategy	macro	strategy
- ifdif <strategy>,<bx>
-	mov	bx,strategy
+ ifdif <strategy>, <bx>
+	mov	bx, strategy
  endif
-	mov	ax,5801h
+	mov	ax, 5801h
 	int	21h
 endm
 
 ;MS-DOS Ver 7.00 以上かどうか(int 2fh, ax=4a33h)
 ;Ret	ax=0:MS-DOS Ver 7.00 以上, ax<>0:それ以外
-;	bx,dx,si,ds:破壊
+;	bx, dx, si, ds:破壊
 IsUpperThanDosVer7	macro
 	push	ds
-	mov	ax,4a33h
+	mov	ax, 4a33h
 	int	2fh
 	pop	ds
 endm
@@ -149,10 +149,10 @@ PSP_t	struc
 		db	?		; 04h	予約
 		db	5 dup (?)	; 05h	DOS 機能を FAR コールするための
 					;	5 バイト
-PSPint22h	dw	?,?		; 0ah	プログラム終了アドレス(int 22h)
-PSPint23h	dw	?,?		; 0eh	<Ctrl+C> ハンドラのアドレス
+PSPint22h	dw	?, ?		; 0ah	プログラム終了アドレス(int 22h)
+PSPint23h	dw	?, ?		; 0eh	<Ctrl+C> ハンドラのアドレス
 					;	(int 23h)
-PSPint24h	dw	?,?		; 12h	致命的エラーハンドラのアドレス
+PSPint24h	dw	?, ?		; 12h	致命的エラーハンドラのアドレス
 					;	(int 24h)
 PSPparseg	dw	?		; 16h	親プロセスの PSP セグメント
 		db	14h dup (?)	; 18h	ファイルテーブル
@@ -160,8 +160,8 @@ PSPenvseg	dw	?		; 2ch	環境変数領域のセグメント
 		dw	?		; 2eh	SP 退避領域
 		dw	?		; 30h	SS 退避領域
 		dw	?		; 32h	ファイルテーブルの数
-PSPpfiletbl	dw	?,?		; 34h	ファイルテーブルへのポインタ
-		dw	?,?		; 38h	手前の PSP へのポインタ
+PSPpfiletbl	dw	?, ?		; 34h	ファイルテーブルへのポインタ
+		dw	?, ?		; 38h	手前の PSP へのポインタ
 		db	4 dup (?)	; 3ch	予約
 		dw	?		; 40h	MS-DOS バージョン番号
 		db	0eh dup (?)	; 42h	予約
@@ -183,12 +183,12 @@ MCBsize		dw	?		; メモリブロックのパラグラフ数
 MCBname		db	8 dup (?)	; Owner ファイル名
 MCB_t	ends
 
-;パラメータブロック(dosfunc 4b00h,4b01h)
+;パラメータブロック(dosfunc 4b00h, 4b01h)
 PRM_t	struc
 PRMenvseg	dw	?		; 環境変数領域のセグメントアドレス
-PRMcmdline	dw	?,?		; コマンドラインへのポインタ
-PRMFCB1		dw	?,?		; デフォルト FCB#1 へのポインタ
-PRMFCB2		dw	?,?		; デフォルト FCB#2 へのポインタ
+PRMcmdline	dw	?, ?		; コマンドラインへのポインタ
+PRMFCB1		dw	?, ?		; デフォルト FCB#1 へのポインタ
+PRMFCB2		dw	?, ?		; デフォルト FCB#2 へのポインタ
 PRM_SP		dw	?		; SP の初期値 - 2 (dosfunc 4b01h)
 PRM_SS		dw	?		; SS の初期値     (dosfunc 4b01h)
 PRM_IP		dw	?		; IP の初期値     (dosfunc 4b01h)
@@ -199,7 +199,7 @@ PRM_t	ends
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; コード ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 cseg	segment				; セグメント cseg の開始
-	assume	cs:cseg,ds:cseg,ss:cseg	; 各セグメントレジスタの宣言
+	assume	cs:cseg, ds:cseg, ss:cseg	; 各セグメントレジスタの宣言
 
 public	DosID, dosprog, WinID, winprog, params
 public	endexecwin, newadr, endofprog
@@ -211,24 +211,24 @@ start:
 	jmp	main
 
 
-Version	db	"Execdw.com Ver.1.12  Copyright (C) 1998-2000  K.Takata",CR,LF
+Version	db	"Execdw.com Ver.1.13  Copyright (C) 1998-2005  K.Takata",CR,LF
 
 
 	org	140h
 
 DosID	db	"DOS="
-dosprog	db	256 dup (0)		; DOS 環境時に起動するプログラム
+dosprog	db	260 dup (0)		; DOS 環境時に起動するプログラム
 WinID	db	"WIN="
-winprog	db	256 dup (0)		; Win 環境時に起動するプログラム
+winprog	db	260 dup (0)		; Win 環境時に起動するプログラム
 
 
 ; パラメータブロック
 params	dw	0
-	dw	PSPargc,0
-	dw	PSPFCB1,0
-	dw	PSPFCB2,0
-;	dw	?,?		; 以下のプログラムのうち８バイトをデータ領域
-;	dw	?,?		; として利用（プログラムの一部が破壊されるが
+	dw	PSPargc, 0
+	dw	PSPFCB1, 0
+	dw	PSPFCB2, 0
+;	dw	?, ?		; 以下のプログラムのうち８バイトをデータ領域
+;	dw	?, ?		; として利用（プログラムの一部が破壊されるが
 				; 実行された後なので問題ない）
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -236,25 +236,25 @@ params	dw	0
 ;;
 	public	main
 main	proc	near
-;	mov	sp,offset stktop	; スタック領域の設定
+;	mov	sp, offset stktop	; スタック領域の設定
 ;
-	GetTrueDosVer			; Ret : BX,DX
-	cmp	bx,5 + 50 * 100h	; Ver == 5.50 (Windows NT)
+	GetTrueDosVer			; Ret : BX, DX
+	cmp	bx, 5 + 50 * 100h	; Ver == 5.50 (Windows NT)
 	je	execwin
-	cmp	bl,7			; Ver < 7.00
+	cmp	bl, 7			; Ver < 7.00
 	jb	DOS
 
 	IsUpperThanDosVer7		; MS-DOS 7.00 (Windows 95) 以上か
-	test	ax,ax			; MS-DOS 7.00 以上  =>  AX = 0
+	test	ax, ax			; MS-DOS 7.00 以上  =>  AX = 0
 	jne	DOS
 
-	xor	cx,cx			; バッファサイズ = 0
-	xor	di,di			; ダミーのバッファアドレス
-	mov	dx,3
-	mov	ax,168eh
-	mov	bx,ax			; AX の値を BX に保存
+	xor	cx, cx			; バッファサイズ = 0
+	xor	di, di			; ダミーのバッファアドレス
+	mov	dx, 3
+	mov	ax, 168eh
+	mov	bx, ax			; AX の値を BX に保存
 	int	2fh			; 仮想マシンタイトルの取得
-	cmp	ax,bx
+	cmp	ax, bx
 	jne	execwin		; この機能をサポートしていれば Windows 95
 				; （プロテクトモード）である。
 
@@ -269,34 +269,34 @@ main	endp
 ;;
 	public	execwin
 execwin	proc	near
-	mov	al,byte ptr [winprog]
-	cmp	al,0
+	mov	al, byte ptr [winprog]
+	cmp	al, 0
 	je	execdos			; Win 用のプログラムがセットされて
 					; いなければ DOS 用を起動する。
 
-	cmp	al,0ffh
+	cmp	al, 0ffh
 	jne	lbl000			; 最初の１文字が 0ffh ならば
 		Exit	;0		; プログラムは起動しない。
 lbl000:
-	mov	bx,offset endexecwin + STKSIZ + 0fh
-	and	bx,0fff0h
-	mov	sp,bx			; スタックの設定
-	shr	bx,4
-	ReallocMem	es,bx		; 不要なメモリを解放
+	mov	bx, offset endexecwin + STKSIZ + 0fh
+	and	bx, 0fff0h
+	mov	sp, bx			; スタックの設定
+	shr	bx, 4
+	ReallocMem	es, bx		; 不要なメモリを解放
 
 	; プログラムの起動
-	mov	bx,offset params
-;	mov	[bx].PRMenvseg,0		; 初期化済み
-;	mov	[bx].PRMcmdline,offset PSPargc	; 初期化済み
-	mov	[bx].(PRMcmdline+2),ds
-;	mov	[bx].PRMFCB1,offset PSPFCB1	; 初期化済み
-	mov	[bx].(PRMFCB1+2),ds
-;	mov	[bx].PRMFCB2,offset PSPFCB2	; 初期化済み
-	mov	[bx].(PRMFCB2+2),ds
-	mov	dx,offset winprog
+	mov	bx, offset params
+;	mov	[bx].PRMenvseg, 0		; 初期化済み
+;	mov	[bx].PRMcmdline, offset PSPargc	; 初期化済み
+	mov	[bx].(PRMcmdline+2), ds
+;	mov	[bx].PRMFCB1, offset PSPFCB1	; 初期化済み
+	mov	[bx].(PRMFCB1+2), ds
+;	mov	[bx].PRMFCB2, offset PSPFCB2	; 初期化済み
+	mov	[bx].(PRMFCB2+2), ds
+	mov	dx, offset winprog
 ;	push	ds
 ;	pop	es
-	mov	ax,4b00h
+	mov	ax, 4b00h
 	int	21h			; プログラムのロードと実行
 	jc	err1
 
@@ -315,22 +315,22 @@ endexecwin:		; Win 用のプログラムを起動するときは、これ以降は不要
 ;;
 	public	execdos
 execdos	proc	near
-	mov	bx,offset endofprog + STKSIZ + 0fh
-	and	bx,0fff0h
-	mov	sp,bx			; スタックの設定
-	shr	bx,4
-	mov	cx,bx			; 現プロセスの必要パラグラフ数
-	ReallocMem	es,bx		; 不要なメモリを解放
+	mov	bx, offset endofprog + STKSIZ + 0fh
+	and	bx, 0fff0h
+	mov	sp, bx			; スタックの設定
+	shr	bx, 4
+	mov	cx, bx			; 現プロセスの必要パラグラフ数
+	ReallocMem	es, bx		; 不要なメモリを解放
 
 	GetStrategy			; ストラテジの取得
-	jnc	lbl100
-		Exit	0ffh
+	jc	errorexit
+
 lbl100:
 	push	ax			; 現在のストラテジを保存
-	mov	bx,2			; 上位メモリブロックから割り当て
-	cmp	ax,bx			; oldstrategy == 2
+	mov	bx, 2			; 上位メモリブロックから割り当て
+	cmp	ax, bx			; oldstrategy == 2
 	jne	lbl101
-		xor	bx,bx	; 下位メモリブロックから割り当て (bx = 0)
+		xor	bx, bx		; 下位メモリブロックから割り当て (bx=0)
 lbl101:
 	SetStrategy	bx		; ストラテジの設定
 
@@ -339,132 +339,135 @@ lbl101:
 
 	cld
 	; 新領域にプログラムをコピー
-	shl	cx,3
-	mov	es,ax			; 新プログラム領域のセグメント
-	xor	di,di
-	xor	si,si
+	shl	cx, 3
+	mov	es, ax			; 新プログラム領域のセグメント
+	xor	di, di
+	xor	si, si
 	rep	movsw
 
-	mov	dx,ds:[PSPenvseg]
-	mov	ax,dx
+	mov	dx, ds:[PSPenvseg]
+	mov	ax, dx
 	dec	ax
-	mov	ds,ax
-	mov	cx,ds:[MCBsize]		; 環境変数領域の必要パラグラフ数
+	mov	ds, ax
+	mov	cx, ds:[MCBsize]	; 環境変数領域の必要パラグラフ数
 
 	AllocMem	cx		; 新環境変数領域の確保
 	jc	allocmemerr
 
 	; 新領域に環境変数をコピー
-	shl	cx,3
-	push	es
-	mov	es,ax			; 新環境変数領域のセグメント
-	mov	ds,dx
-	xor	di,di
-	xor	si,si
+	shl	cx, 3
+	push	es			; 新プログラム領域のセグメント
+	mov	es, ax			; 新環境変数領域のセグメント
+	mov	ds, dx
+	xor	di, di
+	xor	si, si
 	rep	movsw
 	pop	si			; <=  push es
 
-	mov	di,ax			; 新環境変数領域のセグメント
+	mov	di, ax			; 新環境変数領域のセグメント
 
-	jmp	short lbl102
+;	jmp	short resetstrategy
 
 allocmemerr:
-;	mov	cl,1
-lbl102:
-	pop	bx
+;	mov	cl, 1
+resetstrategy:
+	pop	bx			; <= push ax
 	SetStrategy	bx		; ストラテジを元に戻す
-	jcxz	lbl102_1		; エラーがなければ CX = 0 である
-		Exit	0ffh		; メモリ不足
-lbl102_1:
+	jcxz	lbl102			; メモリ不足でなければ CX = 0 である
+
+errorexit:
+	Exit	0ffh			; エラー終了
+
+
+lbl102:
 	FreeMEM	dx			; 現環境変数領域の解放
 
-	mov	ds,si
-	mov	ds:[PSPenvseg],di	; 新環境変数領域のセグメント
-	mov	ds:[PSPpfiletbl+2],si	; ファイルテーブルへのポインタ
+	mov	ds, si			; 新プログラム領域のセグメント
+	mov	ds:[PSPenvseg], di	; 新環境変数領域のセグメント
+	mov	ds:[PSPpfiletbl+2], si	; ファイルテーブルへのポインタ
 	dec	di
-	mov	ds,di			; 新環境変数領域の MCB セグメント
-	mov	di,offset MCBowner
-	mov	ds:[di],si		; Owner ID 変更
-	mov	bx,si			; SI を BX にコピー
+	mov	ds, di			; 新環境変数領域の MCB セグメント
+	mov	di, offset MCBowner
+	mov	ds:[di], si		; Owner ID 変更 (新環境変数領域)
+	mov	bx, si			; SI を BX にコピー
 	dec	si
-	mov	ds,si			; 新領域の MCB セグメント
-	mov	ds:[di],bx		; Owner ID 変更
-;	mov	ax,ss
+	mov	ds, si			; 新領域の MCB セグメント
+	mov	ds:[di], bx		; Owner ID 変更
+;	mov	ax, ss
 ;	dec	ax
-;	mov	ds,ax			; 現領域の MCB セグメント
-;	mov	ds:[di],bx		; Owner ID 変更
+;	mov	ds, ax			; 現領域の MCB セグメント
+;	mov	ds:[di], bx		; Owner ID 変更
 
 	SetPSP	bx			; 新 PSP アドレスのセット
 
 	push	ss
 	pop	es		; 現領域のセグメントアドレスを ES に保存
-	mov	ds,bx			; 新 ds
-	mov	ss,bx			; 新 ss
-	push	bx			; 新 cs
-	mov	bx,offset newadr	; 新 ip
-	push	bx
+	mov	ds, bx			; 新 ds (new PSP)
+	mov	ss, bx			; 新 ss (new stack segment)
+	push	bx			; 新 cs (new program segment)
+	push	offset newadr		; 新 ip
 db	0cbh		;retf		; 新領域にジャンプ
 
 newadr:
 	FreeMem	es			; 旧メモリブロックの解放
-	jnc	lbl103
-		Exit	0ffh
+	jc	errorexit
+
 lbl103:
 	; プログラムのロード
-	mov	bx,offset params
-;	mov	[bx].PRMenvseg,0		; 初期化済み
-;	mov	[bx].PRMcmdline,offset PSPargc	; 初期化済み
-	mov	[bx].(PRMcmdline+2),ds
-;	mov	[bx].PRMFCB1,offset PSPFCB1	; 初期化済み
-	mov	[bx].(PRMFCB1+2),ds
-;	mov	[bx].PRMFCB2,offset PSPFCB2	; 初期化済み
-	mov	[bx].(PRMFCB2+2),ds
-	mov	dx,offset dosprog
+	mov	bx, offset params
+;	mov	[bx].PRMenvseg, 0		; 初期化済み
+;	mov	[bx].PRMcmdline, offset PSPargc	; 初期化済み
+	mov	[bx].(PRMcmdline+2), ds
+;	mov	[bx].PRMFCB1, offset PSPFCB1	; 初期化済み
+	mov	[bx].(PRMFCB1+2), ds
+;	mov	[bx].PRMFCB2, offset PSPFCB2	; 初期化済み
+	mov	[bx].(PRMFCB2+2), ds
+	mov	dx, offset dosprog
 	push	ds
 	pop	es
-	mov	ax,4b01h
+	mov	ax, 4b01h
 	int	21h			; プログラムのロードと非実行
-	jnc lbl104
+	jnc	lbl104
 		Exit	al
 lbl104:
-	mov	es,ds:[PSPenvseg]
+	mov	es, ds:[PSPenvseg]
 	FreeMem	es			; 現環境変数領域の解放
 
 	GetPSP			; 起動プログラムの PSP セグメント => BX
 
 	; 親プロセスの PSP セグメントアドレスをコピーし、
 	; 割り込みベクタ 22h, 23h, 24h を元に戻す
-	mov	si,PSPint22h
+	mov	si, PSPint22h
 	push	si
-	mov	es,bx			; 起動プログラムの PSP セグメント
-	mov	di,si
-	mov	cx,7			; PSPint22h .. PSPparseg
+	mov	es, bx			; 起動プログラムの PSP セグメント
+	mov	di, si
+	mov	cx, 7			; PSPint22h .. PSPparseg
 	rep	movsw
 
-	mov	cl,3			; mov cx,3 と同じ(CX = 0 である)
+	mov	cl, 3			; mov cx, 3 と同じ(CX = 0 である)
 	pop	bp			; PSPint22h
-	mov	ax,2500h+22h
+	mov	ax, 2500h+22h
 	push	ds
 lbl105:
-	lds	dx,dword ptr [bp]
-	int	21h			; 割り込みベクタの設定
-	add	bp,4
-	inc	ax
+		lds	dx, dword ptr [bp]
+		int	21h		; 割り込みベクタの設定
+		add	bp, 4
+		inc	ax
 	loop	lbl105
 	pop	ds
 
-	mov	si,offset params
-	mov	ss,[si].PRM_SS		; SS の初期値
-	mov	sp,[si].PRM_SP		; SP の初期値 - 2
-	pop	ax			; 起動時の AX レジスタの初期値
+	mov	si, offset params
+	mov	ss, [si].PRM_SS		; SS の初期値
+	mov	sp, [si].PRM_SP		; SP の初期値 - 2
+	pop	ax	; 起動時の AX レジスタの初期値 (set by func 4B01h)
 	pushf
 	push	[si].PRM_CS		; CS の初期値
 	push	[si].PRM_IP		; IP の初期値
-	mov	dx,ds			; 現領域の PSP セグメント
+	mov	dx, ds			; 現領域の PSP セグメント
 	dec	dx
-	mov	ds,dx			; 現領域の MCB セグメント
+	mov	ds, dx			; 現領域の MCB セグメント
 	cli				; 割り込み禁止
-	mov	ds:[MCBowner],0		; 現領域の解放
+	mov	ds:[MCBowner], 0	; 現領域の解放
 	push	es
 	pop	ds			; 起動プログラムの PSP セグメント
 	iret				; 子プロセスにジャンプ（割り込み許可）

@@ -1,7 +1,8 @@
 /*
-	Execdw.c Ver.1.20	Copyright (C) 2000  K.Takata
+	Execdw.c Ver.2.00	Copyright (C) 2000-2005  K.Takata
 */
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 #define DosID	"DOS="
@@ -58,12 +59,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		LPSTR lpCmdLine, int nCmdShow)
 #endif
 {
-	char filename[_MAX_PATH], buf[2048];
+	char /*filename[MAX_PATH],*/ buf[2048];
+	char *filename;
+	char *img;
 	DWORD ret, readbytes;
-	char *lpszCommandLine, *p1, *p2;
-	HANDLE fp;
+	unsigned char *lpszCommandLine, *p1, *p2;
+//	HANDLE fp;
 	PROCESS_INFORMATION pi;
-	STARTUPINFO si = {sizeof(STARTUPINFO)};
+	STARTUPINFO si /*= {sizeof(STARTUPINFO)}*/;
 	
 	
 	lpszCommandLine = GetCommandLine();
@@ -86,7 +89,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		*lpszCommandLine++ = '\0';
 	}
 	
-	
+	/*
 	GetModuleFileName(NULL, filename, sizeof(filename));
 	
 	fp = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_READ,
@@ -97,9 +100,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 	ReadFile(fp, buf, sizeof(buf), &readbytes, NULL);
 	CloseHandle(fp);
+	*/
+	img = (char *) GetModuleHandle(NULL);
+	readbytes = *(DWORD *) (img + 0x3c);	// offset to PE header
+	
 	
 //	p1 = searchstr(buf, readbytes, DosID);
-	p2 = searchstr(buf, readbytes, WinID);
+	p2 = searchstr(img, readbytes, WinID);
 	if (/*(p1 == NULL) ||*/ (p2 == NULL)) {
 		message("Data is broken.");
 		return 1;
@@ -108,15 +115,24 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 //	filename[0] = '\0';
 	/* Windows 起動時に起動するプログラム名をセット */
 //	lstrcat(filename, p2 + lstrlen(WinID));
-	wsprintf(filename, "%s %s" + 3, p2 + lstrlen(WinID));
+//	wsprintf(filename, "%s %s" + 3, p2 + lstrlen(WinID));
 	
-	if (*filename == '\0') {
+	filename = p2 + sizeof(WinID) - 1;
+	
+	if (*filename == '\0' || *filename == '\xff') {
 		return 0;
 	}
 	
-	wsprintf(buf, "%s %s", filename, lpszCommandLine);
+//	wsprintf(buf, "%s %s", filename, lpszCommandLine);
+	buf[0] = '\0';
+	lstrcat(buf, filename);
+	lstrcat(buf, " ");
+	lstrcat(buf, lpszCommandLine);
+	
+	GetStartupInfo(&si);
 	
 	ret = CreateProcess(NULL, buf, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
+//	ret = CreateProcess(filename, lpszCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi);
 	
 	if (ret) {
 #ifndef WINMAIN
