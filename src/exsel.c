@@ -1,6 +1,6 @@
 /****************************************************************************/
-/*		Executable file Selector	exsel.exe		Ver.2.00				*/
-/*		Copyright (C) 1998-2005  K.Takata									*/
+/*		Executable file Selector	exsel.exe		Ver.2.01				*/
+/*		Copyright (C) 1998-2011  K.Takata									*/
 /****************************************************************************/
 
 #include <ctype.h>
@@ -358,8 +358,8 @@ char *searchstr(const char *mem, size_t n, const char *str)
 void usage(void)
 {
 	char *msg[] = {
-		"Executable file Selector  exsel.exe  Ver.2.00",
-		"Copyright (C) 1998-2005  K.Takata\n",
+		"Executable file Selector  exsel.exe  Ver.2.01",
+		"Copyright (C) 1998-2011  K.Takata\n",
 		"usage : exsel [<option>] <execname> [<dosprog> [<winprog>]]\n",
 		" <option>    -nw    : Windows 起動時はプログラムを起動しない",
 		"             -nd    : DOS 起動時はプログラムを起動しない",

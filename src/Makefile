@@ -1,7 +1,7 @@
 #
 #	This is a makefile of  "Executabe file Selector."
 #
-#	Copyright (C)  1998-2005  K.Takata
+#	Copyright (C)  1998-2011  K.Takata
 #
 
 CC = cl /nologo
@@ -13,7 +13,7 @@ all : exsel.exe
 #exsel.exe : exsel.c exsel.h exselw.h exsel1.h
 #	lcc -o $@ exsel.c -lintlib -lexpand.obj
 exsel.exe : exsel.c exsel.h exselw.h exsel1.h
-	$(CC) /MD /Fe$@ /O1 exsel.c /link setargv.obj /opt:nowin98
+	$(CC) /MD /Fe$@ /O1 exsel.c /link setargv.obj /opt:nowin98 /merge:.rdata=.text
 
 exsel.h : execdw.exe mkarray.exe
 	mkarray execdw.exe execdw > $@
@@ -25,23 +25,23 @@ exsel1.h : execdw1.com mkarray.exe
 
 
 execdww.exe : execdww.obj tnywmain.obj execdos.exe
-	$(CC) /Fo$@ execdww.obj tnywmain.obj kernel32.lib user32.lib /link /opt:nowin98 /stub:execdos.exe /merge:.data=.text /merge:.rdata=.text /section:.text,erw
+	$(CC) /Fo$@ execdww.obj tnywmain.obj kernel32.lib user32.lib /link /opt:nowin98 /stub:execdos.exe /merge:.rdata=.text
 
 execdww.obj : execdw.c
-	$(CC) /c /O1 /W4 /DWINMAIN /Fo$@ execdw.c
+	$(CC) /c /O1 /W4 /GF /FAsc /DWINMAIN /Fo$@ execdw.c
 
 tnywmain.obj : tnywmain.c
-	$(CC) /c /O1 /W4 tnywmain.c
+	$(CC) /c /O1 /W4 /GF /FAsc tnywmain.c
 
 
 execdw.exe : execdw.obj tnymain.obj execdos.exe
-	$(CC) /Fo$@ execdw.obj tnymain.obj kernel32.lib user32.lib /link /opt:nowin98 /stub:execdos.exe /merge:.data=.text /merge:.rdata=.text /section:.text,erw
+	$(CC) /Fo$@ execdw.obj tnymain.obj kernel32.lib user32.lib /link /opt:nowin98 /stub:execdos.exe /merge:.rdata=.text
 
 execdw.obj : execdw.c
-	$(CC) /c /O1 /W4 execdw.c
+	$(CC) /c /O1 /W4 /GF /FAsc execdw.c
 
 tnymain.obj : tnymain.c
-	$(CC) /c /O1 /W4 tnymain.c
+	$(CC) /c /O1 /W4 /GF /FAsc tnymain.c
 
 
 
@@ -62,7 +62,7 @@ execdw1.obj : execdw.asm
 
 
 mkarray.exe : mkarray.c
-	$(CC) /MD $? /link /opt:nowin98
+	$(CC) /O1 /MD $? /link /opt:nowin98 /merge:.rdata=.text
 
 
 clean :
@@ -75,7 +75,9 @@ clean :
 	del mkarray.exe
 	del execdos.obj
 	del execdw.obj
+	del execdw.cod
 	del execdww.obj
+	del execdww.cod
 	del execdw1.obj
 	del exsel.obj
 	del mkarray.obj

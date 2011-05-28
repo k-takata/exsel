@@ -1,5 +1,5 @@
 /*
-	Execdw.c Ver.2.00	Copyright (C) 2000-2005  K.Takata
+	Execdw.c Ver.2.01	Copyright (C) 2000-2011  K.Takata
 */
 
 #define WIN32_LEAN_AND_MEAN
@@ -10,6 +10,8 @@
 
 
 #ifndef WINMAIN
+static HANDLE hStdOut;
+
 void myfputs(char *str, HANDLE handle)
 {
 	DWORD dwWritten;
@@ -20,11 +22,6 @@ void myfputs(char *str, HANDLE handle)
 void message(char *str)
 {
 #ifndef WINMAIN
-	static HANDLE hStdOut = INVALID_HANDLE_VALUE;
-	
-	if (hStdOut == INVALID_HANDLE_VALUE)
-		hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	
 	myfputs("execdw: ", hStdOut);
 	myfputs(str, hStdOut);
 	myfputs("\n", hStdOut);
@@ -51,6 +48,8 @@ char *searchstr(const char *mem, size_t n, const char *str)
 }
 
 
+#pragma warning(disable:4100)	/* 'identifier' : unreferenced formal parameter */
+
 /* Main */
 #ifndef WINMAIN
 int main(int argc, char *argv[])
@@ -60,16 +59,19 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #endif
 {
 	char /*filename[MAX_PATH],*/ buf[2048];
-	char *filename;
-	char *img;
+	char *filename, /* *p1, */ *p2;
+	IMAGE_DOS_HEADER *img;
 	DWORD ret, readbytes;
-	unsigned char *lpszCommandLine, *p1, *p2;
+	TBYTE *lpszCommandLine;	// must be unsigned for multibyte strings
 //	HANDLE fp;
 	PROCESS_INFORMATION pi;
-	STARTUPINFO si /*= {sizeof(STARTUPINFO)}*/;
+	STARTUPINFO si;
 	
+#ifndef WINMAIN
+	hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+#endif
 	
-	lpszCommandLine = GetCommandLine();
+	lpszCommandLine = (TBYTE *) GetCommandLine();
 	
 	if (*lpszCommandLine == '"') {
 		do {
@@ -101,12 +103,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	ReadFile(fp, buf, sizeof(buf), &readbytes, NULL);
 	CloseHandle(fp);
 	*/
-	img = (char *) GetModuleHandle(NULL);
-	readbytes = *(DWORD *) (img + 0x3c);	// offset to PE header
+	img = (IMAGE_DOS_HEADER *) GetModuleHandle(NULL);
+	readbytes = img->e_lfanew;	// offset to PE header
 	
 	
-//	p1 = searchstr(buf, readbytes, DosID);
-	p2 = searchstr(img, readbytes, WinID);
+//	p1 = searchstr((char *) img, readbytes, DosID);
+	p2 = searchstr((char *) img, readbytes, WinID);
 	if (/*(p1 == NULL) ||*/ (p2 == NULL)) {
 		message("Data is broken.");
 		return 1;

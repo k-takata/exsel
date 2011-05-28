@@ -1,7 +1,7 @@
 
 
-               Executable file Selector  Exsel  Ver.2.00
-                   Copyright (C) 1998-2005  K.Takata
+               Executable file Selector  Exsel  Ver.2.01
+                   Copyright (C) 1998-2011  K.Takata
 
 
 １．概要
@@ -23,16 +23,16 @@
     ・用途に合わせて DOS 形式、Win32 Console 形式、Win32 GUI 形式の３種
       類のセレクタプログラムから、好きなものを選ぶことができます。
     ・切り替えて起動するプログラム１組ごとに１つのセレクタプログラムを生
-      成する必要がありますが、セレクタプログラムのサイズは 1KB ～ 2.5KB
-      と非常にコンパクトになっています。
+      成する必要がありますが、セレクタプログラムのサイズは 1KiB ～
+      2.5KiB と非常にコンパクトになっています。
 
 
 ３．動作環境
     ・生成されたセレクタプログラム
-    　MS-DOS、Win95/98/2k/XP など
+    　MS-DOS、Win95/98/2k/XP/Vista/7 など
 
     ・exsel.exe
-    　Win95/98/2k/XP など
+    　Win95/98/2k/XP/Vista/7 など
 
 
 ４．使用方法
@@ -173,6 +173,9 @@
         ・exsel.exe 自身を Win32 Console 形式に変更。
         ・-nd, -td, -tc, -tw オプションを追加。
 
+    2011/05/29  Ver.2.01
+        ・avast! 6.0 が、安全でないアプリとして警告を出すのに対処。
+
 
 ８．注意事項、その他
     ・このプログラムはフリーソフトウェアです。
@@ -184,6 +187,5 @@
     ・ソースファイルの使用は非商用に限り自由です。
 
         作者   : K.Takata（高田 謙）
-        E-mail : kentkt@anet.ne.jp
         URL    : http://webs.to/ken/
                  http://homepage3.nifty.com/k-takata/
