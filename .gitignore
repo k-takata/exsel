@@ -2,6 +2,8 @@
 *.so
 *.a
 *.obj
+*.com
+*.cod
 *.dll
 *.exe
 *.exp
@@ -17,5 +19,9 @@
 *.RES
 *.res
 *.old
+
+src/exsel.h
+src/exsel1.h
+src/exselw.h
 
 !stub_*.exe
