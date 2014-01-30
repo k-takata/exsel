@@ -33,15 +33,19 @@ CFLAGS = $(CFLAGS) /GS-
 
 all : exsel.exe
 
-#exsel.exe : exsel.c exsel.h exselw.h exsel1.h
+#exsel.exe : exsel.c exselc.h exselg.h exselcu.h exselgu.h exsel1.h
 #	$(CC16) -o $@ exsel.c -lintlib -lexpand.obj
-exsel.exe : exsel.c exsel.h exselw.h exsel1.h
+exsel.exe : exsel.c exselc.h exselg.h exselcu.h exselgu.h exsel1.h
 	$(CC) /MD /Fe$@ /O1 exsel.c /link setargv.obj $(LDFLAGS)
 
-exsel.h : execdw.exe mkarray.exe
-	mkarray execdw.exe execdw > $@
-exselw.h : execdww.exe mkarray.exe
-	mkarray execdww.exe execdww > $@
+exselc.h : execdwc.exe mkarray.exe
+	mkarray execdwc.exe execdwc > $@
+exselg.h : execdwg.exe mkarray.exe
+	mkarray execdwg.exe execdwg > $@
+exselcu.h : execdwcu.exe mkarray.exe
+	mkarray execdwcu.exe execdwcu > $@
+exselgu.h : execdwgu.exe mkarray.exe
+	mkarray execdwgu.exe execdwgu > $@
 exsel1.h : execdw1.com mkarray.exe
 	mkarray execdw1.com execdw1 > $@
 
@@ -49,41 +53,41 @@ exsel1.h : execdw1.com mkarray.exe
 # GUI version
 
 # ANSI
-execdww.exe : execdww.obj tnywmain.obj execdos.exe
-	$(CC) /Fo$@ execdww.obj tnywmain.obj kernel32.lib user32.lib /link $(LDFLAGS) /stub:execdos.exe
+execdwg.exe : execdwg.obj tnywmain.obj execdos.exe
+	$(CC) /Fo$@ execdwg.obj tnywmain.obj kernel32.lib user32.lib /link $(LDFLAGS) /stub:execdos.exe
 
-execdww.obj : execdw.c
-	$(CC) /c /O1 /W4 /GF /FAsc /DWINMAIN /Fo$@ execdw.c
+execdwg.obj : execdw.c
+	$(CC) /c $(CFLAGS) /Fa$*.cod /DWINMAIN /Fo$@ execdw.c
 
 # Unicode with INI support
-execdwwu.exe : execdwwu.obj tnywmain.obj execdos.exe
-	$(CC) /Fo$@ execdwwu.obj tnywmain.obj kernel32.lib user32.lib /link $(LDFLAGS) /stub:execdos.exe
+execdwgu.exe : execdwgu.obj tnywmain.obj execdos.exe
+	$(CC) /Fo$@ execdwgu.obj tnywmain.obj kernel32.lib user32.lib /link $(LDFLAGS) /stub:execdos.exe
 
-execdwwu.obj : execdw.c
-	$(CC) /c /O1 /W4 /GF /FAsc /DWINMAIN /DUNICODE /D_UNICODE /DINIFILE /Fo$@ execdw.c
+execdwgu.obj : execdw.c
+	$(CC) /c $(CFLAGS) /Fa$*.cod /DWINMAIN /DUNICODE /D_UNICODE /DINIFILE /Fo$@ execdw.c
 
 tnywmain.obj : tnywmain.c
-	$(CC) /c /O1 /W4 /GF /FAsc tnywmain.c
+	$(CC) /c $(CFLAGS) /Fa$*.cod tnywmain.c
 
 
 # CUI version
 
 # ANSI
-execdw.exe : execdw.obj tnymain.obj execdos.exe
-	$(CC) /Fo$@ execdw.obj tnymain.obj kernel32.lib user32.lib /link $(LDFLAGS) /stub:execdos.exe
+execdwc.exe : execdwc.obj tnymain.obj execdos.exe
+	$(CC) /Fo$@ execdwc.obj tnymain.obj kernel32.lib user32.lib /link $(LDFLAGS) /stub:execdos.exe
 
-execdw.obj : execdw.c
-	$(CC) /c /O1 /W4 /GF /FAsc execdw.c
+execdwc.obj : execdw.c
+	$(CC) /c $(CFLAGS) /Fa$*.cod /Fo$@ execdw.c
 
 # Unicode with INI support
-execdwu.exe : execdwu.obj tnymain.obj execdos.exe
-	$(CC) /Fo$@ execdwu.obj tnymain.obj kernel32.lib user32.lib /link $(LDFLAGS) /stub:execdos.exe
+execdwcu.exe : execdwcu.obj tnymain.obj execdos.exe
+	$(CC) /Fo$@ execdwcu.obj tnymain.obj kernel32.lib user32.lib /link $(LDFLAGS) /stub:execdos.exe
 
-execdwu.obj : execdw.c
-	$(CC) /c /O1 /W4 /GF /FAsc /DUNICODE /D_UNICODE /DINIFILE /Fo$@ execdw.c
+execdwcu.obj : execdw.c
+	$(CC) /c $(CFLAGS) /Fa$*.cod /DUNICODE /D_UNICODE /DINIFILE /Fo$@ execdw.c
 
 tnymain.obj : tnymain.c
-	$(CC) /c /O1 /W4 /GF /FAsc tnymain.c
+	$(CC) /c $(CFLAGS) /Fa$*.cod tnymain.c
 
 
 
@@ -110,27 +114,29 @@ mkarray.exe : mkarray.c
 clean :
 	del execdos.exe
 	del execdos.old
-	del execdw.exe
-	del execdww.exe
-	del execdwu.exe
-	del execdwwu.exe
+	del execdwc.exe
+	del execdwg.exe
+	del execdwcu.exe
+	del execdwgu.exe
 	del execdw1.com
 	del exsel.exe
 	del mkarray.exe
 	del execdos.obj
-	del execdw.obj
-	del execdw.cod
-	del execdww.obj
-	del execdww.cod
-	del execdwu.obj
-	del execdwu.cod
-	del execdwwu.obj
-	del execdwwu.cod
+	del execdwc.obj
+	del execdwc.cod
+	del execdwg.obj
+	del execdwg.cod
+	del execdwcu.obj
+	del execdwcu.cod
+	del execdwgu.obj
+	del execdwgu.cod
 	del execdw1.obj
 	del exsel.obj
 	del mkarray.obj
 	del tnymain.obj
 	del tnywmain.obj
-	del exsel.h
-	del exselw.h
+	del exselc.h
+	del exselg.h
+	del exselcu.h
+	del exselgu.h
 	del exsel1.h

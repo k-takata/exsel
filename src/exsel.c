@@ -7,8 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "exsel.h"								/* char execdw[]; */
-#include "exselw.h"								/* char execdww[]; */
+#include "exselc.h"								/* char execdwc[]; */
+#include "exselg.h"								/* char execdwg[]; */
+#include "exselcu.h"							/* char execdwcu[]; */
+#include "exselgu.h"							/* char execdwgu[]; */
 #include "exsel1.h"								/* char execdw1[]; */
 
 #ifdef _WIN32
@@ -54,7 +56,7 @@ int main(int argc, char *argv[])
 		
 		p = *++argv;
 		if (*p == '-' || *p == '/') {			/* スイッチ指定 チェック */
-			switch (tolower(*++p)) {
+			switch (*++p) {
 			case 'n':
 				if (strcmp(p, "nw") == 0) {			/* -nw */
 					f_win = 1;
@@ -83,7 +85,7 @@ int main(int argc, char *argv[])
 				break;
 			
 			case 't':							/* -t */
-				switch (tolower(*++p)) {
+				switch (*++p) {
 				case 'd':	/* -td: DOS */
 					progtype = 0;
 					break;
@@ -93,11 +95,18 @@ int main(int argc, char *argv[])
 				case 'w':	/* -tw: Win32 GUI */
 					progtype = 2;
 					break;
+				case 'C':	/* -tC: Win32 Console, Unicode */
+					progtype = 3;
+					break;
+				case 'W':	/* -tW: Win32 GUI, Unicode */
+					progtype = 4;
+					break;
 				}
 				break;
 			
 			case '?':							/* -h, -? */
 			case 'h':
+			case 'H':
 			default:
 				usage();
 				break;
@@ -257,12 +266,20 @@ int exsel(const char *execname, const char *dosprog, const char *winprog,
 		size = sizeof(execdw1);
 		break;
 	case 1:
-		pexecdw = execdw;
-		size = sizeof(execdw);
+		pexecdw = execdwc;
+		size = sizeof(execdwc);
 		break;
 	case 2:
-		pexecdw = execdww;
-		size = sizeof(execdww);
+		pexecdw = execdwg;
+		size = sizeof(execdwg);
+		break;
+	case 3:
+		pexecdw = execdwcu;
+		size = sizeof(execdwcu);
+		break;
+	case 4:
+		pexecdw = execdwgu;
+		size = sizeof(execdwgu);
 		break;
 	}
 	
@@ -367,7 +384,9 @@ void usage(void)
 		"             -cvt   : <execname> を新バージョンに変換する",
 		"             -td    : DOS 形式のセレクタプログラムを生成する",
 		"             -tc    : Win32 CUI 形式のセレクタプログラムを生成する",
+		"             -tC    : Win32 CUI, Unicode 形式のセレクタプログラムを生成する",
 		"             -tw,-w : Win32 GUI 形式のセレクタプログラムを生成する",
+		"             -tW    : Win32 GUI, Unicode 形式のセレクタプログラムを生成する",
 		"             -h, -? : このヘルプを表示する\n",
 		" <execname>  生成するセレクタプログラム名",
 		" <dosprog>   MS-DOS 起動時に起動するプログラム名",
