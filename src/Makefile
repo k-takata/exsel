@@ -6,7 +6,8 @@
 
 CC = cl /nologo
 CC16 = lcc
-LDFLAGS = /merge:.rdata=.text
+CFLAGS = /O1 /W4 /GF /FAsc
+LDFLAGS = /merge:.rdata=.text /map
 
 # Get the version of cl.exe.
 #  1. Write the version to a work file (mscver$(_NMAKE_VER).~).
@@ -22,6 +23,12 @@ LDFLAGS = /merge:.rdata=.text
 
 !if $(_MSC_VER) < 1500
 LDFLAGS = $(LDFLAGS) /opt:nowin98
+!else
+LDFLAGS = $(LDFLAGS) /dynamicbase:no
+!endif
+
+!if $(_MSC_VER) >= 1400
+CFLAGS = $(CFLAGS) /GS-
 !endif
 
 all : exsel.exe
