@@ -51,12 +51,14 @@ void message(char *str)
 /* ƒƒ‚ƒŠ“à‚©‚ç•¶š—ñ‚ğŒŸõ */
 char *searchstr(const char *mem, size_t n, const char *str)
 {
-	const char *p;
-	int len;
+	const char *p, *q, *r;
 	
-	len = lstrlenA(str);
-	for (p = mem; p + len <= mem + n; p++) {
-		if (!strncmp(p, str, len))
+	for (p = mem; p < mem + n; p++) {
+		for (q = p, r = str;
+				(q < mem + n) && (*r != '\0') && (*q == *r);
+				q++, r++)
+			;
+		if (*r == '\0')
 			return (char *)p;
 	}
 	return NULL;

@@ -341,14 +341,14 @@ int readprogname(const char *execname, char *dosprog, char *winprog,
 /* ƒƒ‚ƒŠ“à‚©‚ç•¶š—ñ‚ğŒŸõ */
 char *searchstr(const char *mem, size_t n, const char *str)
 {
-	const char *p;
-	int len;
+	const char *p, *q, *r;
 	
-	len = strlen(str);
 	for (p = mem; p < mem + n; p++) {
-		if (*p != *str)
-			continue;
-		if (!strncmp(p, str, len))
+		for (q = p, r = str;
+				(q < mem + n) && (*r != '\0') && (*q == *r);
+				q++, r++)
+			;
+		if (*r == '\0')
 			return (char *)p;
 	}
 	return NULL;
