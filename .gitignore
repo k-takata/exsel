@@ -20,8 +20,10 @@
 *.res
 *.old
 
-src/exsel.h
 src/exsel1.h
-src/exselw.h
+src/exselc.h
+src/exselcu.h
+src/exselg.h
+src/exselgu.h
 
 !stub_*.exe
