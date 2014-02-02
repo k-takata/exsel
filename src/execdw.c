@@ -67,74 +67,59 @@ char *searchstr(const char *mem, size_t n, const char *str)
 
 #ifdef INIFILE
 /*
- * getenvarg
+ * getarg
  *
- * 環境変数の引数を解析し、変数名を arg に、値を val にコピー。
- * 次の引数へのポインタを返す。次の引数がないときは NULL を返す。
+ * Parse cmdline and copy the first argument to arg.
+ * If val is not NULL, parse ENVNAME=VALUE format then copy ENVNAME to arg,
+ * and VALUE to val. If the argument matches this format, *f_envfound is set
+ * to 1.
+ * Return a pointer to the next argument. Return NULL if there are no
+ * arguments left.
  */
-LPTSTR getenvarg(LPCTSTR cmdline, LPTSTR arg, size_t argsize,
-		LPTSTR val, size_t valsize)
+LPTSTR getarg(LPCTSTR cmdline, LPTSTR arg, size_t argsize,
+		LPTSTR val, size_t valsize, int *f_envfound)
 {
 	PTBYTE p = (PTBYTE) cmdline;
-	PTBYTE start, end;
+	PTBYTE q = (PTBYTE) arg;
+	PTBYTE argend = (q == NULL) ? NULL : (q + argsize);
+	BOOL envfound = val ? FALSE : TRUE;
 	TBYTE quote = _T('\0');
-	size_t len;
+	TBYTE c;
 	
-	start = p;
-	if (*p == _T('"') || *p == _T('\'')) {
-		quote = *p;
-		++p;
-		start = p;
-		while (*p && (*p != quote) && (*p != _T('=')))
-			++p;
-		end = p;
-		if (*p == quote) {
-			++p;
-			quote = _T('\0');
+	if (f_envfound)
+		*f_envfound = 0;
+	c = *p;
+	while (c > _T(' ') || (quote && c)) {
+		if (c == _T('"') || c == _T('\'')) {
+			if (c == quote) {
+				TBYTE oldquote = quote;
+				quote = _T('\0');
+				c = *++p;
+				if (c != oldquote)
+					continue;
+			} else if (!quote) {
+				quote = c;
+				c = *++p;
+				continue;
+			}
 		}
-	} else {
-		while (*p != _T('='))
-			++p;
-		end = p;
-	}
-	if (arg != NULL && argsize > 0) {
-		len = end - start;
-		if (len > argsize - 1)
-			len = argsize - 1;
-		_tcsncpy(arg, (LPTSTR) start, len);
-#ifndef USE_STRING_API
-		arg[len] = _T('\0');
-#endif
-	}
-	++p;		// skip '='
-	start = p;
-	if (quote == _T('\0') && (*p == _T('"') || *p == _T('\''))) {
-		quote = *p;
-		++p;
-		start = p;
-	}
-	if (quote != _T('\0')) {
-		while (*p && (*p != quote))
-			++p;
-		end = p;
-		if (*p == quote) {
-			++p;
-			quote = _T('\0');
+		if (c == _T('=') && !envfound) {
+			envfound = TRUE;
+			if (f_envfound)
+				*f_envfound = 1;
+			if (val) {
+				if (q && q < argend)
+					*q = _T('\0');
+				q = (PTBYTE) val;
+				argend = q + valsize;
+			}
+		} else if (q && q < argend - 1) {
+			*q++ = c;
 		}
-	} else {
-		while (*p > _T(' '))
-			++p;
-		end = p;
+		c = *++p;
 	}
-	if (val != NULL && valsize > 0) {
-		len = end - start;
-		if (len > valsize - 1)
-			len = valsize - 1;
-		_tcsncpy(val, (LPTSTR) start, len);
-#ifndef USE_STRING_API
-		val[len] = _T('\0');
-#endif
-	}
+	if (q && q < argend)
+		*q = _T('\0');
 	while (*p && (*p <= _T(' ')))
 		++p;
 	if (*p == _T('\0'))
@@ -173,6 +158,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 #endif
 	
+#ifdef INIFILE
+	lpszCommandLine = getarg((TBYTE *) GetCommandLine(),
+			NULL, 0, NULL, 0, NULL);
+#else
 	lpszCommandLine = (TBYTE *) GetCommandLine();
 	
 	if (*lpszCommandLine == _T('"')) {
@@ -192,6 +181,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	while (*lpszCommandLine && (*lpszCommandLine <= _T(' '))) {
 		*lpszCommandLine++ = _T('\0');
 	}
+#endif
 	
 #ifdef INIFILE
 	GetModuleFileName(NULL, inifile, lengthof(inifile));
@@ -218,7 +208,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			LPTSTR val = buf;
 			p = envs;
 			while (p) {
-				p = getenvarg(p, env, MAX_PATH, val, MAX_PATH);
+				val[0] = _T('\0');
+				p = getarg(p, env, MAX_PATH, val, MAX_PATH, NULL);
 				SetEnvironmentVariable(env, val[0] ? val : NULL);
 			}
 		}
