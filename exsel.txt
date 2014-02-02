@@ -222,4 +222,4 @@
         ìÒ   : K.Takatai‚“c Œªj
         URL    : http://webs.to/ken/
                  http://homepage3.nifty.com/k-takata/
-		 https://github.com/k-takata/exsel
+                 https://github.com/k-takata/exsel
