@@ -1,5 +1,5 @@
 /*
-	Execdw.c Ver.2.01	Copyright (C) 2000-2011  K.Takata
+	Execdw.c Ver.2.10	Copyright (C) 2000-2014  K.Takata
 */
 
 #define WIN32_LEAN_AND_MEAN

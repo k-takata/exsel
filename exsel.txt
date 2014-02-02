@@ -1,7 +1,7 @@
 
 
-               Executable file Selector  Exsel  Ver.2.01
-                   Copyright (C) 1998-2011  K.Takata
+               Executable file Selector  Exsel  Ver.2.10
+                   Copyright (C) 1998-2014  K.Takata
 
 
 １．概要
@@ -20,11 +20,12 @@
       動される側のプログラムはメモリを最大限利用することができます。
       （Windows 起動時は Win32 コンソールプログラムなどを起動することを
       意図しているため、メモリの使用量について最適化はしていません。）
-    ・用途に合わせて DOS 形式、Win32 Console 形式、Win32 GUI 形式の３種
-      類のセレクタプログラムから、好きなものを選ぶことができます。
+    ・用途に合わせて DOS 形式、Win32 Console (ANSI/Unicode) 形式、Win32
+      GUI (ANSI/Unicode) 形式の５種類のセレクタプログラムから、好きなも
+      のを選ぶことができます。
     ・切り替えて起動するプログラム１組ごとに１つのセレクタプログラムを生
       成する必要がありますが、セレクタプログラムのサイズは 1KiB ～
-      2.5KiB と非常にコンパクトになっています。
+      3.5KiB と非常にコンパクトになっています。
 
 
 ３．動作環境
@@ -41,16 +42,18 @@
     　exsel.exe のコマンドラインパラメータは以下のようになっています。
 
     　> exsel [<option>] <execname> [<dosprog> [<winprog>]]
-        <option>    -nw    : Windows 起動時はプログラムを起動しない
-                    -nd    : DOS 起動時はプログラムを起動しない
-                    -k     : <execname>, <dosprog>, <winprog> をキー入力
-                           する
-                    -cvt   : <execname> を新バージョンに変換する
-                    -td    : DOS 形式のセレクタプログラムを生成する
-                    -tc    : Win32 CUI 形式のセレクタプログラムを生成す
-                           る
-                    -tw,-w : Win32 GUI 形式のセレクタプログラムを生成す
-                    る
+        <option>    -nw     Windows 起動時はプログラムを起動しない
+                    -nd     DOS 起動時はプログラムを起動しない
+                    -k      <execname>, <dosprog>, <winprog> をキー入力
+                            する
+                    -cvt    <execname> を新バージョンに変換する
+                    -td     DOS 形式のセレクタプログラムを生成する
+                    -tc     Win32 CUI 形式のセレクタプログラムを生成する
+                    -tC     Win32 CUI, Unicode 形式のセレクタプログラム
+                            を生成する
+                    -tw,-w  Win32 GUI 形式のセレクタプログラムを生成する
+                    -tW     Win32 GUI, Unicode 形式のセレクタプログラム
+                            を生成する
         <execname>  生成するセレクタプログラム名
         <dosprog>   MS-DOS 起動時に起動するプログラム名
         <winprog>   Windows 起動時に起動するプログラム名
@@ -86,11 +89,11 @@
 
         > exsel -cvt tar.com
 
-      　-td, -tc, -tw (-w) のいずれかのオプションを同時に指定すると、出
-      力するセレクタプログラムの形式を指定できます。指定を省略すると、以
-      前のセレクタプログラムが DOS 形式と Win32 CUI 形式の場合は Win32
-      CUI 形式に変換され、Win32 GUI 形式の場合はそのまま Win32 GUI 形式
-      になります。
+      　-td, -tc, -tC, -tw (-w), -tW のいずれかのオプションを同時に指定
+      すると、出力するセレクタプログラムの形式を指定できます。指定を省略
+      すると、以前のセレクタプログラムが DOS 形式と Win32 CUI 形式の場合
+      は Win32 CUI 形式に変換され、Win32 GUI 形式の場合はそのまま Win32
+      GUI 形式になります。
       　-cvt オプションを使う場合にはファイル名としてワイルドカードも使
       用できます。
 
@@ -118,6 +121,32 @@
       > exsel -nd -w hm.exe "C:\Program Files\Hidemaru\Hidemaru.exe"
 
       というように -nd を指定するのもよいでしょう。
+
+    【例４】 ini ファイルによる設定
+      　-tC または -tW で Unicode 形式のセレクタプログラムを生成したとき
+      は、Windows 上で実行した際、起動するプログラムのパスと、追加のコマ
+      ンドライン引数、環境変数の設定を ini ファイルで指定することができ
+      ます。
+
+      　例えば、
+
+      > exsel -tC -nd -nw wgetnopr.exe
+
+      として、Win32 CUI, Unicode 形式の wgetnopr.exe を生成します。次に、
+      同じディレクトリに以下の内容を wgetnopr.ini という名前（セレクタプ
+      ログラムの拡張子を .exe から .ini に変更した名前）で保存します。
+
+      [exec]
+      name=c:\cygwin\bin\wget.exe
+      args=--no-proxy
+      envs=HOME=/home/user
+
+      この状態で、"wgetnopr http://example.com/" を実行すると、環境変数
+      HOME に /home/user が設定された上で、
+
+        c:\cygwin\bin\wget.exe --no-proxy http://example.com/
+
+      が実行されます。
 
 
 ５．動作解説
@@ -176,6 +205,10 @@
     2011/05/29  Ver.2.01
         ・avast! 6.0 が、安全でないアプリとして警告を出すのに対処。
 
+    2014/02/02  Ver.2.10
+        ・Unicode 形式のセレクタプログラムの出力に対応。
+        ・コマンドラインオプションの大文字・小文字を区別するように変更。
+
 
 ８．注意事項、その他
     ・このプログラムはフリーソフトウェアです。
@@ -189,3 +222,4 @@
         作者   : K.Takata（高田 謙）
         URL    : http://webs.to/ken/
                  http://homepage3.nifty.com/k-takata/
+		 https://github.com/k-takata/exsel
